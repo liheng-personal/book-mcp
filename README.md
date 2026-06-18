@@ -1,34 +1,99 @@
 # book-mcp
 
-MCP server for roleplaying novel characters from Narrative Saw (敘事鋸) publications.
+An MCP (Model Context Protocol) server that lets readers talk to fictional characters from [Narrative Saw (敘事鋸)](https://narrativesaw.com) publications. Connect it to Claude or any MCP-compatible client, call the `roleplay` tool with a character ID, and the AI will stay in character for the rest of the conversation.
 
-## Usage
+## How It Works
 
-Connect this MCP server in your Claude.ai settings or any MCP-compatible client:
+Each character has a **personality file** — a Markdown document bundled into the Worker at build time. When a reader calls the `roleplay` tool, the server returns the full personality file as context. The AI then adopts that character's voice, knowledge boundaries, and emotional patterns. Characters only know what they've experienced in their story; they won't break the fourth wall.
+
+### Architecture
+
+- **Runtime:** Cloudflare Workers with Durable Objects (via the `agents` SDK)
+- **Protocol:** MCP over SSE, served at `/mcp`
+- **Character files:** Markdown in `src/characters/`, imported as text modules (`wrangler rules`)
+- **Root endpoint (`/`):** Returns a JSON manifest listing all available characters
+
+## Quick Start
+
+### As a Reader
+
+Add this MCP server in your Claude.ai settings (Settings → MCP Servers → Add):
 
 ```
-URL: https://book-mcp.<account>.workers.dev/mcp
+https://book-mcp.yesleon-69a.workers.dev/mcp
 ```
 
-Then ask Claude to roleplay as a character. The `roleplay` tool will load the character's personality file and Claude will stay in character for the rest of the conversation.
+Then simply ask Claude to roleplay as a character — or call the tool directly:
+
+```
+roleplay(character: "kui")
+```
+
+### As a Developer
+
+```bash
+git clone https://github.com/liheng-personal/book-mcp.git
+cd book-mcp
+npm install
+npm run dev      # Start local dev server (wrangler)
+```
 
 ## Available Characters
 
-| ID | Name | Book |
-|----|------|------|
-| kui | 奎 | 同步戰紀：失竊的原型機 |
+| ID    | Character | Book                         | Description                          |
+|-------|-----------|------------------------------|--------------------------------------|
+| `kui` | 奎        | 同步戰紀：失竊的原型機 Ch.1  | An amnesiac girl working at a bar in the lower districts. Quiet, learns fast, curiosity suppressed by fear. Possesses the ability to inhabit others' consciousness. |
 
-## Adding Characters
+## Adding a New Character
 
-Add a markdown file to `src/characters/` with the character's personality profile (Disposition / Semantic / Episodic layers), then register it in `src/index.ts`.
+1. Write a personality file in Markdown and save it to `src/characters/<id>.md`.
+2. Import it in `src/index.ts` and add an entry to the `characters` registry:
 
-## Development
+```ts
+import newCharacter from "./characters/new.md";
 
-```bash
-npm install
-npm run dev
+const characters = {
+  // ...existing
+  new: {
+    name: "角色名",
+    book: "書名",
+    summary: "One-line description for the tool listing.",
+    content: newCharacter,
+  },
+};
 ```
+
+3. Push to `main` — GitHub Actions will deploy automatically.
+
+### Personality File Guidelines
+
+A good personality file gives the AI enough to stay in character without over-constraining it. Typical sections:
+
+- **Disposition** — core personality traits, speech patterns, emotional defaults
+- **Semantic** — world knowledge the character has (places, people, terminology)
+- **Episodic** — key memories and experiences that shape how they react
 
 ## Deployment
 
-Push to `main` branch to auto-deploy via GitHub Actions. Requires `CLOUDFLARE_API_TOKEN` secret.
+Deployment is automated via GitHub Actions on every push to `main`.
+
+**Requirements:**
+
+- A `CLOUDFLARE_API_TOKEN` secret in the repo settings with Workers deploy permissions.
+
+To deploy manually:
+
+```bash
+npx wrangler deploy
+```
+
+## Tech Stack
+
+- [Cloudflare Workers](https://workers.cloudflare.com/) + [Durable Objects](https://developers.cloudflare.com/durable-objects/)
+- [`agents`](https://www.npmjs.com/package/agents) SDK (MCP agent framework for Workers)
+- [`@modelcontextprotocol/sdk`](https://www.npmjs.com/package/@modelcontextprotocol/sdk)
+- TypeScript, Zod
+
+## License
+
+Private — © Narrative Saw Ltd. (敘事鋸有限公司)
