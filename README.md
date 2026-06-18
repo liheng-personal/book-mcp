@@ -1,99 +1,65 @@
 # book-mcp
 
-An MCP (Model Context Protocol) server that lets readers talk to fictional characters from [Narrative Saw (敘事鋸)](https://narrativesaw.com) publications. Connect it to Claude or any MCP-compatible client, call the `roleplay` tool with a character ID, and the AI will stay in character for the rest of the conversation.
+讓讀者直接跟小說角色對話的 AI 服務。
 
-## How It Works
+由[敘事鋸有限公司](https://narrativesaw.com)開發，以 [MCP（Model Context Protocol）](https://modelcontextprotocol.io)技術打造。讀者透過 Claude 連上這個服務後，就能與故事中的角色即時對話——角色會用自己的語氣、記憶和情緒來回應，而且只知道故事裡發生過的事。
 
-Each character has a **personality file** — a Markdown document bundled into the Worker at build time. When a reader calls the `roleplay` tool, the server returns the full personality file as context. The AI then adopts that character's voice, knowledge boundaries, and emotional patterns. Characters only know what they've experienced in their story; they won't break the fourth wall.
+## 這是什麼？
 
-### Architecture
+每個角色背後有一份**人格文件**，記錄了角色的性格特質、說話方式、知道哪些事、經歷過什麼。當讀者選擇一個角色，AI 就會讀取這份文件，完全變成那個角色跟你說話。
 
-- **Runtime:** Cloudflare Workers with Durable Objects (via the `agents` SDK)
-- **Protocol:** MCP over SSE, served at `/mcp`
-- **Character files:** Markdown in `src/characters/`, imported as text modules (`wrangler rules`)
-- **Root endpoint (`/`):** Returns a JSON manifest listing all available characters
+角色不會「演 AI」，不會跳出角色解釋劇情，也不會知道故事裡她不該知道的事。
 
-## Quick Start
+## 怎麼使用？
 
-### As a Reader
+你需要一個 [Claude](https://claude.ai) 帳號（免費或付費皆可）。
 
-Add this MCP server in your Claude.ai settings (Settings → MCP Servers → Add):
+### 步驟
+
+1. 打開 Claude，進入 **Settings → MCP Servers → Add**
+2. 貼上以下網址：
 
 ```
 https://book-mcp.yesleon-69a.workers.dev/mcp
 ```
 
-Then simply ask Claude to roleplay as a character — or call the tool directly:
+3. 連線成功後，直接對 Claude 說「我想跟奎聊天」，或是指定角色 ID 即可。
 
-```
-roleplay(character: "kui")
-```
+不需要安裝任何軟體，不需要寫程式。
 
-### As a Developer
+## 目前可以聊的角色
 
-```bash
-git clone https://github.com/liheng-personal/book-mcp.git
-cd book-mcp
-npm install
-npm run dev      # Start local dev server (wrangler)
-```
+| 角色 | 作品 | 簡介 |
+|------|------|------|
+| 奎 | 同步戰紀：失竊的原型機 第一章 | 失憶少女，在底層街區的酒吧當服務生。話少、學習極快、好奇心被恐懼壓制。擁有意識附身的異能。 |
 
-## Available Characters
+角色會隨作品出版進度持續新增。
 
-| ID    | Character | Book                         | Description                          |
-|-------|-----------|------------------------------|--------------------------------------|
-| `kui` | 奎        | 同步戰紀：失竊的原型機 Ch.1  | An amnesiac girl working at a bar in the lower districts. Quiet, learns fast, curiosity suppressed by fear. Possesses the ability to inhabit others' consciousness. |
+## 體驗上的注意事項
 
-## Adding a New Character
+- **角色只知道自己經歷過的事。** 如果你問她故事後面才會發生的劇情，她不會知道。
+- **對話是即時生成的。** 每次聊天的內容都不一樣，不是預錄的台詞。
+- **角色不會承認自己是 AI。** 這是設計上的選擇，為了維持沉浸感。
+- **不含劇透。** 角色的知識範圍被嚴格限制在已出版章節內。
 
-1. Write a personality file in Markdown and save it to `src/characters/<id>.md`.
-2. Import it in `src/index.ts` and add an entry to the `characters` registry:
+## 給出版社夥伴的說明
 
-```ts
-import newCharacter from "./characters/new.md";
+book-mcp 是一個開放的技術框架。如果你的出版社有興趣為自家作品的角色建立類似的對話體驗，歡迎聯繫敘事鋸討論合作方式。
 
-const characters = {
-  // ...existing
-  new: {
-    name: "角色名",
-    book: "書名",
-    summary: "One-line description for the tool listing.",
-    content: newCharacter,
-  },
-};
-```
+要讓一個角色上線，需要準備的是一份**人格文件**（Markdown 格式），內容通常包含：
 
-3. Push to `main` — GitHub Actions will deploy automatically.
+- **性格層** — 核心個性、說話習慣、情緒預設狀態
+- **知識層** — 角色知道的世界觀、人物關係、專有名詞
+- **記憶層** — 關鍵經歷與回憶，決定角色對事件的反應方式
 
-### Personality File Guidelines
+技術面由敘事鋸處理，出版社只需提供角色設定與故事素材。
 
-A good personality file gives the AI enough to stay in character without over-constraining it. Typical sections:
+## 技術資訊
 
-- **Disposition** — core personality traits, speech patterns, emotional defaults
-- **Semantic** — world knowledge the character has (places, people, terminology)
-- **Episodic** — key memories and experiences that shape how they react
+本服務架設在 [Cloudflare Workers](https://workers.cloudflare.com/)，使用 MCP 協議與 Claude 溝通。原始碼公開於此 repo。
 
-## Deployment
+如需技術細節，請參閱 `src/index.ts` 與 `wrangler.jsonc`。
 
-Deployment is automated via GitHub Actions on every push to `main`.
+## 授權
 
-**Requirements:**
-
-- A `CLOUDFLARE_API_TOKEN` secret in the repo settings with Workers deploy permissions.
-
-To deploy manually:
-
-```bash
-npx wrangler deploy
-```
-
-## Tech Stack
-
-- [Cloudflare Workers](https://workers.cloudflare.com/) + [Durable Objects](https://developers.cloudflare.com/durable-objects/)
-- [`agents`](https://www.npmjs.com/package/agents) SDK (MCP agent framework for Workers)
-- [`@modelcontextprotocol/sdk`](https://www.npmjs.com/package/@modelcontextprotocol/sdk)
-- TypeScript, Zod
-
-## License
-
-Private — © Narrative Saw Ltd. (敘事鋸有限公司)
+© 敘事鋸有限公司 Narrative Saw Ltd.
