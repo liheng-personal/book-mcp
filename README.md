@@ -2,30 +2,51 @@
 
 讓讀者直接跟小說角色對話的 AI 服務。
 
-由[敘事鋸有限公司](https://narrativesaw.com)開發，以 [MCP（Model Context Protocol）](https://modelcontextprotocol.io)技術打造。讀者透過 Claude 連上這個服務後，就能與故事中的角色即時對話——角色會用自己的語氣、記憶和情緒來回應，而且只知道故事裡發生過的事。
+由[敘事鋸有限公司](https://narrativesaw.com)開發，以 [MCP（Model Context Protocol）](https://modelcontextprotocol.io)技術打造。讀者透過支援 MCP 的 AI 助手連上這個服務後，就能與故事中的角色即時對話——角色會用自己的語氣、記憶和情緒來回應，而且只知道故事裡發生過的事。
 
 ## 這是什麼？
 
-每個角色背後有一份**人格文件**，記錄了角色的性格特質、說話方式、知道哪些事、經歷過什麼。當讀者選擇一個角色，AI 就會讀取這份文件，完全變成那個角色跟你說話。
+每個角色背後有一份**人格文件**（CHARACTER.md），記錄了角色的性格特質、說話方式、知道哪些事、經歷過什麼。當讀者選擇一個角色，AI 就會讀取這份文件，完全變成那個角色跟你說話。
 
 角色不會「演 AI」，不會跳出角色解釋劇情，也不會知道故事裡她不該知道的事。
 
 ## 怎麼使用？
 
-你需要一個 [Claude](https://claude.ai) 帳號（免費或付費皆可）。
+本服務支援所有相容 MCP 協議的 AI 平台。以下列出目前主流平台的連線方式。
 
-### 步驟
-
-1. 打開 Claude，進入 **Settings → MCP Servers → Add**
-2. 貼上以下網址：
+服務網址（所有平台共用）：
 
 ```
 https://book-mcp.yesleon-69a.workers.dev/mcp
 ```
 
-3. 連線成功後，直接對 Claude 說「我想跟奎聊天」，或是指定角色 ID 即可。
+### Claude（推薦）
+
+適用帳號：免費或付費皆可。
+
+1. 打開 [Claude](https://claude.ai)，進入 **Settings → MCP Servers → Add**
+2. 貼上服務網址
+3. 連線成功後，直接說「我想跟奎聊天」即可
 
 不需要安裝任何軟體，不需要寫程式。
+
+### ChatGPT
+
+適用帳號：Plus、Pro、Team、Enterprise（免費帳號不支援自訂 MCP）。
+
+1. 打開 [ChatGPT](https://chatgpt.com)，進入 **Settings → Connectors → Advanced**
+2. 開啟 **Developer Mode**
+3. 回到 Connectors 頁面，點選 **Create**（或 **Add custom connector**），貼上服務網址
+4. 開啟新對話後，點訊息欄的 **＋** → **More**，啟用剛才建立的 connector
+5. 對 ChatGPT 說「我想跟奎聊天」
+
+注意：ChatGPT 的 MCP connector 需要在每次新對話中手動啟用。
+
+### 其他支援 MCP 的工具
+
+MCP 是開放協議，任何支援 MCP 的 AI 客戶端理論上都能連線。目前已知支援 MCP 的工具超過 300 個（包含 Cursor、Windsurf、VS Code + GitHub Copilot、Cline 等）。只要在工具的 MCP 設定中貼上服務網址即可。
+
+Google Gemini 的消費者版（web/app）目前尚不支援自訂 MCP server，僅 Gemini CLI 及企業版可用。
 
 ## 目前可以聊的角色
 
@@ -46,17 +67,29 @@ https://book-mcp.yesleon-69a.workers.dev/mcp
 
 book-mcp 是一個開放的技術框架。如果你的出版社有興趣為自家作品的角色建立類似的對話體驗，歡迎聯繫敘事鋸討論合作方式。
 
-要讓一個角色上線，需要準備的是一份**人格文件**（Markdown 格式），內容通常包含：
+### 不需要上傳作品原文
+
+這項技術**不需要將小說原文上傳到網路上，也不需要拿原文去餵 AI**。要讓一個角色上線，唯一需要的是一份**人格文件**（CHARACTER.md），這是一份用 Markdown 格式撰寫的角色設定文件，內容通常包含三層：
 
 - **性格層** — 核心個性、說話習慣、情緒預設狀態
 - **知識層** — 角色知道的世界觀、人物關係、專有名詞
 - **記憶層** — 關鍵經歷與回憶，決定角色對事件的反應方式
 
-技術面由敘事鋸處理，出版社只需提供角色設定與故事素材。
+人格文件裡沒有作品的完整文字，只有角色設定與經歷摘要，因此不涉及原文的版權疑慮。
+
+### 如果需要敘事鋸協助製作人格文件
+
+出版社可以自行撰寫人格文件，也可以委託敘事鋸代為製作。若委託敘事鋸處理，流程如下：
+
+1. 出版社提供**部分章節原文**作為素材（不需要全書）
+2. 出版社同意敘事鋸使用 AI 對提供的章節進行摘要與分析，以產出人格文件
+3. 敘事鋸交付完成的 CHARACTER.md，原文素材不會被保留或用於其他用途
+
+技術面的部署與維運由敘事鋸處理，出版社只需提供角色素材並確認人格文件的內容。
 
 ## 技術資訊
 
-本服務架設在 [Cloudflare Workers](https://workers.cloudflare.com/)，使用 MCP 協議與 Claude 溝通。原始碼公開於此 repo。
+本服務架設在 [Cloudflare Workers](https://workers.cloudflare.com/)，使用 MCP 協議與 AI 客戶端溝通。原始碼公開於此 repo。
 
 如需技術細節，請參閱 `src/index.ts` 與 `wrangler.jsonc`。
 
