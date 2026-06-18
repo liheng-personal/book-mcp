@@ -25,12 +25,12 @@ https://book-mcp.yesleon-69a.workers.dev/mcp
 適用帳號：免費或付費皆可。
 
 1. 打開 [Claude](https://claude.ai)，進入 **Settings → MCP Servers → Add**
-2. 貼上服務網址
-3. 連線成功後，對 Claude 說：**「請用 roleplay 工具扮演奎」**
+2. 貼上服務網址，將連線名稱設為 **book-mcp**（或任何你方便辨識的名稱）
+3. 連線成功後，對 Claude 說：**「請用 book-mcp 扮演奎」**
 
 不需要安裝任何軟體，不需要寫程式。
 
-> **提示：** 如果只說「我想跟奎聊天」，AI 可能會自行扮演而不讀取角色的人格文件。明確提到「roleplay 工具」或「用 book-mcp 扮演」可以確保 AI 呼叫正確的工具、載入完整的角色設定。
+> **重要：** 對話時必須提到你在步驟 2 設定的連線名稱（例如「book-mcp」），AI 才會去呼叫正確的工具載入角色的人格文件。如果只說「我想跟奎聊天」，AI 會自行扮演而不載入角色設定，語氣和記憶都會不準確。
 
 ### ChatGPT
 
@@ -38,9 +38,9 @@ https://book-mcp.yesleon-69a.workers.dev/mcp
 
 1. 打開 [ChatGPT](https://chatgpt.com)，進入 **Settings → Connectors → Advanced**
 2. 開啟 **Developer Mode**
-3. 回到 Connectors 頁面，點選 **Create**（或 **Add custom connector**），貼上服務網址
-4. 開啟新對話後，點訊息欄的 **＋** → **More**，啟用剛才建立的 connector
-5. 對 ChatGPT 說：**「請用 roleplay 工具扮演奎」**
+3. 回到 Connectors 頁面，點選 **Create**（或 **Add custom connector**），貼上服務網址，將名稱設為 **book-mcp**
+4. 開啟新對話後，點訊息欄的 **＋** → **More**，啟用 book-mcp connector
+5. 對 ChatGPT 說：**「請用 book-mcp 扮演奎」**
 
 注意：ChatGPT 的 MCP connector 需要在每次新對話中手動啟用。
 
@@ -52,8 +52,8 @@ Google Gemini 的消費者版（web/app）目前尚不支援自訂 MCP server，
 
 ### 使用提示
 
-- 明確說「請用 roleplay 工具扮演 _角色名_」效果最好。
-- 如果 AI 沒有呼叫工具就自己開始扮演，角色的語氣和記憶可能不準確——請重新要求它使用 roleplay 工具。
+- 對話時務必提到你設定的連線名稱（建議統一取名為 `book-mcp`），例如：「請用 book-mcp 扮演奎」。
+- 如果 AI 沒有呼叫工具就自己開始扮演，角色的語氣和記憶會不準確——請重新明確要求它使用 book-mcp。
 - 角色 ID 列在下方表格中（例如 `kui`），你也可以直接用中文名「奎」。
 
 ## 目前可以聊的角色
